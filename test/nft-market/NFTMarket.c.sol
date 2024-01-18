@@ -16,16 +16,19 @@ contract NFTMarketTest is Test {
 
     address public seller = address(1);
     address public buyer = address(2);
+    address public admin = makeAddr("admin");
 
     function setUp() public {
-        vm.prank(buyer);
+        vm.startPrank(admin);
         aliyaToken = new AliyaToken();
         aliyaNFT = new AliyaNFT();
         nftMarket = new NFTMarket(address(aliyaToken), address(aliyaNFT));
         aliyaTokenRecipient = new AliyaTokenRecipient();
+        aliyaToken.transfer(buyer, 10000);
+        vm.stopPrank();
     }
 
-    function list(address _seller, uint256 tokenId, uint256 price) public {
+    function list(address _seller, uint256 tokenId, uint256 price) private {
         vm.startPrank(_seller);
         aliyaNFT.mint(_seller, tokenId);
         aliyaNFT.approve(address(nftMarket), tokenId);
@@ -33,7 +36,7 @@ contract NFTMarketTest is Test {
         vm.stopPrank();
     }
 
-    function buy(address _buyer, uint256 tokenId, uint256 price) public {
+    function buy(address _buyer, uint256 tokenId, uint256 price) private {
         vm.startPrank(_buyer);
         aliyaToken.approve(address(nftMarket), price);
         nftMarket.buy(tokenId, price);
@@ -46,7 +49,7 @@ contract NFTMarketTest is Test {
         list(seller, tokenId, 1000);
 
         assertEq(nftMarket.tokenIdPrice(tokenId), 1000);
-        assertEq(nftMarket.tokenSeller(tokenId), address(1));
+        assertEq(nftMarket.tokenSeller(tokenId), seller);
     }
 
     function testBuy() public {
