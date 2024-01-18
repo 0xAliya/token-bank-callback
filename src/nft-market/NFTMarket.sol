@@ -27,6 +27,7 @@ contract NFTMarket is IERC721Receiver {
 
     // approve(address to, uint256 tokenId) first
     function list(uint tokenID, uint amount) public {
+        require(IERC721(nftToken).ownerOf(tokenID) == msg.sender, "not owner");
         IERC721(nftToken).safeTransferFrom(
             msg.sender,
             address(this),
@@ -38,18 +39,12 @@ contract NFTMarket is IERC721Receiver {
     }
 
     function buy(uint tokenId, uint amount) external {
-        // require(amount >= tokenIdPrice[tokenId], "low price");
+        require(amount >= tokenIdPrice[tokenId], "low price");
 
-        // require(
-        //     IERC721(nftToken).ownerOf(tokenId) == address(this),
-        //     "aleady selled"
-        // );
-        // console.log("balance:", IERC20(token).balanceOf(msg.sender));
-        // console.log(
-        //     "allowance:",
-        //     IERC20(token).allowance(msg.sender, address(this))
-        // );
-        // console.log(msg.sender, tokenSeller[tokenId], tokenIdPrice[tokenId]);
+        require(
+            IERC721(nftToken).ownerOf(tokenId) == address(this),
+            "aleady selled"
+        );
 
         IERC20(token).transferFrom(
             msg.sender,
@@ -57,5 +52,12 @@ contract NFTMarket is IERC721Receiver {
             tokenIdPrice[tokenId]
         );
         IERC721(nftToken).transferFrom(address(this), msg.sender, tokenId);
+    }
+
+    function unlist(uint tokenId) external {
+        require(tokenSeller[tokenId] == msg.sender, "not seller");
+        IERC721(nftToken).transferFrom(address(this), msg.sender, tokenId);
+        delete tokenIdPrice[tokenId];
+        delete tokenSeller[tokenId];
     }
 }

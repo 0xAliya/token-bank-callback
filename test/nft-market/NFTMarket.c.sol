@@ -78,5 +78,19 @@ contract NFTMarketTest is Test {
         assertEq(aliyaToken.balanceOf(seller), 1000);
     }
 
-    
+    function testUnlist() public {
+        uint256 tokenId = 1;
+
+        list(seller, tokenId, 1000);
+
+        vm.startPrank(seller);
+
+        nftMarket.unlist(tokenId);
+
+        vm.stopPrank();
+
+        assertEq(aliyaNFT.ownerOf(tokenId), seller);
+        assertEq(nftMarket.tokenIdPrice(tokenId), 0);
+        assertEq(nftMarket.tokenSeller(tokenId), address(0));
+    }
 }
