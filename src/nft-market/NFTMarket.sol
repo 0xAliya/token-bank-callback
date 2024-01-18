@@ -1,8 +1,9 @@
 pragma solidity ^0.8.0;
 
-import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol";
-import "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "forge-std/console.sol";
 
 contract NFTMarket is IERC721Receiver {
     mapping(uint => uint) public tokenIdPrice;
@@ -37,12 +38,18 @@ contract NFTMarket is IERC721Receiver {
     }
 
     function buy(uint tokenId, uint amount) external {
-        require(amount >= tokenIdPrice[tokenId], "low price");
+        // require(amount >= tokenIdPrice[tokenId], "low price");
 
-        require(
-            IERC721(nftToken).ownerOf(tokenId) == address(this),
-            "aleady selled"
-        );
+        // require(
+        //     IERC721(nftToken).ownerOf(tokenId) == address(this),
+        //     "aleady selled"
+        // );
+        // console.log("balance:", IERC20(token).balanceOf(msg.sender));
+        // console.log(
+        //     "allowance:",
+        //     IERC20(token).allowance(msg.sender, address(this))
+        // );
+        // console.log(msg.sender, tokenSeller[tokenId], tokenIdPrice[tokenId]);
 
         IERC20(token).transferFrom(
             msg.sender,

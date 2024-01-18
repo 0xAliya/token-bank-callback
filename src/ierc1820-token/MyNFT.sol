@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Aliya is ERC721{
     uint public MAX_LIMIT = 100; // 总量
