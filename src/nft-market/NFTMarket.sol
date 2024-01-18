@@ -5,7 +5,15 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "forge-std/console.sol";
 
-contract NFTMarket is IERC721Receiver {
+interface TokenRecipient {
+    function tokensReceived(
+        address sender,
+        uint amount,
+        bytes memory data
+    ) external returns (bool);
+}
+
+contract NFTMarket is TokenRecipient, IERC721Receiver {
     mapping(uint => uint) public tokenIdPrice;
     mapping(uint => address) public tokenSeller;
     address public immutable token;
@@ -25,7 +33,20 @@ contract NFTMarket is IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    // approve(address to, uint256 tokenId) first
+    function tokensReceived(
+        address sender,
+        uint amount,
+        bytes memory data
+    ) external returns (bool) {
+        uint256 tokenId = abi.decode(data, (uint256));
+        IERC20(token).transfer(
+            tokenSeller[tokenId],
+            tokenIdPrice[tokenId]
+        );
+        IERC721(nftToken).transferFrom(address(this), sender, tokenId);
+        return true;
+    }
+
     function list(uint tokenID, uint amount) public {
         require(IERC721(nftToken).ownerOf(tokenID) == msg.sender, "not owner");
         IERC721(nftToken).safeTransferFrom(
@@ -38,7 +59,7 @@ contract NFTMarket is IERC721Receiver {
         tokenSeller[tokenID] = msg.sender;
     }
 
-    function buy(uint tokenId, uint amount) external {
+    function buy(uint tokenId, uint amount) public {
         require(amount >= tokenIdPrice[tokenId], "low price");
 
         require(

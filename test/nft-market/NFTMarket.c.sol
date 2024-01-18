@@ -6,13 +6,11 @@ import {Test, console} from "forge-std/Test.sol";
 import {NFTMarket} from "../../src/nft-market/NFTMarket.sol";
 import {AliyaToken} from "../../src/nft-market/MyToken.sol";
 import {AliyaNFT} from "../../src/nft-market/MyNFT.sol";
-import {AliyaTokenRecipient} from "../../src/nft-market/TokenRecipient.sol";
 
 contract NFTMarketTest is Test {
     NFTMarket public nftMarket;
     AliyaToken public aliyaToken;
     AliyaNFT public aliyaNFT;
-    AliyaTokenRecipient public aliyaTokenRecipient;
 
     address public seller = address(1);
     address public buyer = address(2);
@@ -23,7 +21,6 @@ contract NFTMarketTest is Test {
         aliyaToken = new AliyaToken();
         aliyaNFT = new AliyaNFT();
         nftMarket = new NFTMarket(address(aliyaToken), address(aliyaNFT));
-        aliyaTokenRecipient = new AliyaTokenRecipient();
         aliyaToken.transfer(buyer, 10000);
         vm.stopPrank();
     }
@@ -40,6 +37,12 @@ contract NFTMarketTest is Test {
         vm.startPrank(_buyer);
         aliyaToken.approve(address(nftMarket), price);
         nftMarket.buy(tokenId, price);
+        vm.stopPrank();
+    }
+
+    function unlist(address _seller, uint256 tokenId) private {
+        vm.startPrank(_seller);
+        nftMarket.unlist(tokenId);
         vm.stopPrank();
     }
 
@@ -62,35 +65,28 @@ contract NFTMarketTest is Test {
         assertEq(aliyaToken.balanceOf(seller), 1000);
     }
 
-    function testCallOnERC20Received() public {
-        uint256 tokenId = 1;
-
-        list(seller, tokenId, 1000);
+    function testCallOnERC20Received(uint256 tokenId, uint256 price) public {
+        vm.assume(tokenId < 100);
+        vm.assume(price < 10000);
+        list(seller, tokenId, price);
 
         vm.startPrank(buyer);
-
         aliyaToken.transferWithCallback(
-            address(aliyaTokenRecipient),
-            1000,
-            abi.encode(address(nftMarket), tokenId)
+            address(nftMarket),
+            price,
+            abi.encode(tokenId)
         );
-
         vm.stopPrank();
 
         assertEq(aliyaNFT.ownerOf(tokenId), buyer);
-        assertEq(aliyaToken.balanceOf(seller), 1000);
+        assertEq(aliyaToken.balanceOf(seller), price);
     }
 
     function testUnlist() public {
         uint256 tokenId = 1;
 
         list(seller, tokenId, 1000);
-
-        vm.startPrank(seller);
-
-        nftMarket.unlist(tokenId);
-
-        vm.stopPrank();
+        unlist(seller, tokenId);
 
         assertEq(aliyaNFT.ownerOf(tokenId), seller);
         assertEq(nftMarket.tokenIdPrice(tokenId), 0);
