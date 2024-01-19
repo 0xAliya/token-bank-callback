@@ -63,9 +63,14 @@ contract NFTMarketTest is Test {
 
         assertEq(aliyaNFT.ownerOf(tokenId), buyer);
         assertEq(aliyaToken.balanceOf(seller), 1000);
+        assertEq(nftMarket.tokenIdPrice(tokenId), 0);
+        assertEq(nftMarket.tokenSeller(tokenId), address(0));
     }
 
-    function testFuzzCallOnERC20Received(uint256 tokenId, uint256 price) public {
+    function testFuzzCallOnERC20Received(
+        uint256 tokenId,
+        uint256 price
+    ) public {
         vm.assume(tokenId < 100);
         vm.assume(price < 10000);
         list(seller, tokenId, price);
@@ -80,6 +85,8 @@ contract NFTMarketTest is Test {
 
         assertEq(aliyaNFT.ownerOf(tokenId), buyer);
         assertEq(aliyaToken.balanceOf(seller), price);
+        assertEq(nftMarket.tokenIdPrice(tokenId), 0);
+        assertEq(nftMarket.tokenSeller(tokenId), address(0));
     }
 
     function testUnlist() public {
