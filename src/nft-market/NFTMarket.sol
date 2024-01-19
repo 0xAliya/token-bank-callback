@@ -39,12 +39,15 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
         bytes memory data
     ) external returns (bool) {
         uint256 tokenId = abi.decode(data, (uint256));
-        IERC20(token).transfer(
-            tokenSeller[tokenId],
-            tokenIdPrice[tokenId]
-        );
+        IERC20(token).transfer(tokenSeller[tokenId], tokenIdPrice[tokenId]);
         IERC721(nftToken).transferFrom(address(this), sender, tokenId);
+        _unlist(tokenId);
         return true;
+    }
+
+    function _unlist(uint tokenId) internal {
+        delete tokenIdPrice[tokenId];
+        delete tokenSeller[tokenId];
     }
 
     function list(uint tokenID, uint amount) public {
@@ -73,12 +76,12 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
             tokenIdPrice[tokenId]
         );
         IERC721(nftToken).transferFrom(address(this), msg.sender, tokenId);
+        _unlist(tokenId);
     }
 
     function unlist(uint tokenId) external {
         require(tokenSeller[tokenId] == msg.sender, "not seller");
         IERC721(nftToken).transferFrom(address(this), msg.sender, tokenId);
-        delete tokenIdPrice[tokenId];
-        delete tokenSeller[tokenId];
+        _unlist(tokenId);
     }
 }
