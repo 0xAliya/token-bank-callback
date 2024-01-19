@@ -65,7 +65,7 @@ contract NFTMarketTest is Test {
         assertEq(aliyaToken.balanceOf(seller), 1000);
     }
 
-    function testCallOnERC20Received(uint256 tokenId, uint256 price) public {
+    function testFuzzCallOnERC20Received(uint256 tokenId, uint256 price) public {
         vm.assume(tokenId < 100);
         vm.assume(price < 10000);
         list(seller, tokenId, price);
