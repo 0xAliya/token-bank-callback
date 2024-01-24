@@ -51,8 +51,9 @@ contract NFTMarketTest is Test {
 
         list(seller, tokenId, 1000);
 
-        assertEq(nftMarket.tokenIdPrice(tokenId), 1000);
-        assertEq(nftMarket.tokenSeller(tokenId), seller);
+        assertEq(nftMarket.getTokenInfo(tokenId).price, 1000);
+        assertEq(nftMarket.getTokenInfo(tokenId).seller, seller);
+        assertEq(nftMarket.getTokenInfo(tokenId).isList, 1);
     }
 
     function testBuy() public {
@@ -63,8 +64,9 @@ contract NFTMarketTest is Test {
 
         assertEq(aliyaNFT.ownerOf(tokenId), buyer);
         assertEq(aliyaToken.balanceOf(seller), 1000);
-        assertEq(nftMarket.tokenIdPrice(tokenId), 0);
-        assertEq(nftMarket.tokenSeller(tokenId), address(0));
+        assertEq(nftMarket.getTokenInfo(tokenId).isList, 0);
+        assertEq(nftMarket.getTokenInfo(tokenId).price, 0);
+        assertEq(nftMarket.getTokenInfo(tokenId).seller, address(0));
     }
 
     function testFuzzCallOnERC20Received(
@@ -85,8 +87,8 @@ contract NFTMarketTest is Test {
 
         assertEq(aliyaNFT.ownerOf(tokenId), buyer);
         assertEq(aliyaToken.balanceOf(seller), price);
-        assertEq(nftMarket.tokenIdPrice(tokenId), 0);
-        assertEq(nftMarket.tokenSeller(tokenId), address(0));
+        assertEq(nftMarket.getTokenInfo(tokenId).price, 0);
+        assertEq(nftMarket.getTokenInfo(tokenId).seller, address(0));
     }
 
     function testUnlist() public {
@@ -96,7 +98,7 @@ contract NFTMarketTest is Test {
         unlist(seller, tokenId);
 
         assertEq(aliyaNFT.ownerOf(tokenId), seller);
-        assertEq(nftMarket.tokenIdPrice(tokenId), 0);
-        assertEq(nftMarket.tokenSeller(tokenId), address(0));
+        assertEq(nftMarket.getTokenInfo(tokenId).price, 0);
+        assertEq(nftMarket.getTokenInfo(tokenId).seller, address(0));
     }
 }

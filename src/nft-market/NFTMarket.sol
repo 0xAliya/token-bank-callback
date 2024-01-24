@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "forge-std/console.sol";
 
 interface TokenRecipient {
     function tokensReceived(
@@ -14,10 +13,20 @@ interface TokenRecipient {
 }
 
 contract NFTMarket is TokenRecipient, IERC721Receiver {
-    mapping(uint => uint) public tokenIdPrice;
-    mapping(uint => address) public tokenSeller;
+    struct ListState {
+        uint isList;
+        address seller;
+        uint256 price;
+    }
+
     address public immutable token;
     address public immutable nftToken;
+
+    ListState[100] listState;
+
+    event List(address indexed seller, uint256 indexed tokenId, uint256 price);
+    event Buy(address indexed buyer, uint256 indexed tokenId, uint256 price);
+    event Unlist(address indexed seller, uint256 indexed tokenId);
 
     constructor(address _token, address _nftToken) {
         token = _token;
@@ -38,16 +47,18 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
         uint amount,
         bytes memory data
     ) external returns (bool) {
+
         uint256 tokenId = abi.decode(data, (uint256));
-        IERC20(token).transfer(tokenSeller[tokenId], tokenIdPrice[tokenId]);
+        IERC20(token).transfer(getTokenInfo(tokenId).seller, amount);
         IERC721(nftToken).transferFrom(address(this), sender, tokenId);
         _unlist(tokenId);
         return true;
     }
 
     function _unlist(uint tokenId) internal {
-        delete tokenIdPrice[tokenId];
-        delete tokenSeller[tokenId];
+        listState[tokenId].isList = 0;
+        listState[tokenId].seller = address(0);
+        listState[tokenId].price = 0;
     }
 
     function list(uint tokenID, uint amount) public {
@@ -58,12 +69,14 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
             tokenID,
             ""
         );
-        tokenIdPrice[tokenID] = amount;
-        tokenSeller[tokenID] = msg.sender;
+        listState[tokenID].isList = 1;
+        listState[tokenID].seller = msg.sender;
+        listState[tokenID].price = amount;
+        emit List(msg.sender, tokenID, amount);
     }
 
     function buy(uint tokenId, uint amount) public {
-        require(amount >= tokenIdPrice[tokenId], "low price");
+        require(amount >= getTokenInfo(tokenId).price, "low price");
 
         require(
             IERC721(nftToken).ownerOf(tokenId) == address(this),
@@ -72,16 +85,26 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
 
         IERC20(token).transferFrom(
             msg.sender,
-            tokenSeller[tokenId],
-            tokenIdPrice[tokenId]
+            getTokenInfo(tokenId).seller,
+            getTokenInfo(tokenId).price
         );
         IERC721(nftToken).transferFrom(address(this), msg.sender, tokenId);
         _unlist(tokenId);
+        emit Buy(msg.sender, tokenId, amount);
     }
 
     function unlist(uint tokenId) external {
-        require(tokenSeller[tokenId] == msg.sender, "not seller");
+        require(getTokenInfo(tokenId).seller == msg.sender, "not seller");
         IERC721(nftToken).transferFrom(address(this), msg.sender, tokenId);
         _unlist(tokenId);
+        emit Unlist(msg.sender, tokenId);
+    }
+
+    function getTokenInfo(uint tokenId) public view returns (ListState memory) {
+        return listState[tokenId];
+    }
+
+    function getListState() public view returns (ListState[100] memory) {
+        return listState;
     }
 }
