@@ -6,7 +6,7 @@ contract Inscription is ERC20 {
     uint256 private _initTotalSupply;
     uint256 private _initPerMint;
 
-    constructor() ERC20("Inscription", "INSC") {
+    constructor() ERC20("", "") {
     }
 
     function name() public view override returns (string memory) {

@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Inscription.sol";
 import "./libs/String.sol";
-import "forge-std/console.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract InscriptionFactory {
