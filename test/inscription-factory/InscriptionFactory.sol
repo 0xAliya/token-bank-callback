@@ -51,4 +51,21 @@ contract InscriptionFactoryTest is Test {
         inscriptionFactory.mint("test");
         inscriptionFactory.mint("test");
     }
+
+    function testFailNameNotExists() public {
+        inscriptionFactory.mint("test");
+    }
+
+    function testFailNameNotEqual4() public {
+        inscriptionFactory.deployInscription(
+            "testssss",
+            "testss",
+            100000,
+            1000
+        );
+    }
+
+    function testFailNameNotEqual42() public {
+        inscriptionFactory.deployInscription("t", "t", 100000, 1000);
+    }
 }

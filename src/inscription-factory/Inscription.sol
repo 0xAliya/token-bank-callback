@@ -5,6 +5,7 @@ contract Inscription is ERC20 {
     string private _initSymbol;
     uint256 private _initTotalSupply;
     uint256 private _initPerMint;
+    bool private _hasInit;
 
     constructor() ERC20("", "") {
     }
@@ -23,6 +24,9 @@ contract Inscription is ERC20 {
         uint256 _totalSupply,
         uint256 _perMint
     ) public {
+        require(!_hasInit, "already init");
+        _hasInit = true;
+
         _initName = _name;
         _initSymbol = _symbol;
         _initTotalSupply = _totalSupply;
