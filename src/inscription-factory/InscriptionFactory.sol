@@ -15,10 +15,10 @@ contract InscriptionFactory {
 
     struct Token {
         address tokenAddress;
-        string tick; // same as symbol in ERC20
-        string name; // full name of token
-        uint256 limitPerMint; // Limitation per mint
-        uint256 maxMintSize; // // max mint size, that means the max mint quantity is: maxMintSize * limitPerMint
+        string name;
+        string symbol;
+        uint256 totalSupply;
+        uint256 perMint;
     }
 
     mapping(string => Token) public tokens;
