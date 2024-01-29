@@ -101,4 +101,16 @@ contract NFTMarketTest is Test {
         assertEq(nftMarket.getTokenInfo(tokenId).price, 0);
         assertEq(nftMarket.getTokenInfo(tokenId).seller, address(0));
     }
+
+    function testGetOwner() public {
+        assertEq(nftMarket.readOwner(), admin);
+    }
+
+    function testSetOwner() public {
+        vm.startPrank(admin);
+        nftMarket.setOwner(seller);
+        vm.stopPrank();
+
+        assertEq(nftMarket.readOwner(), seller);
+    }
 }

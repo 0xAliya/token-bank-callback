@@ -19,10 +19,11 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
         uint256 price;
     }
 
-    address public immutable token;
-    address public immutable nftToken;
+    address public token; // 0
+    address public nftToken; // 1
+    address public owner; // 2
 
-    ListState[100] listState;
+    ListState[100] public listState;
 
     event List(address indexed seller, uint256 indexed tokenId, uint256 price);
     event Buy(address indexed buyer, uint256 indexed tokenId, uint256 price);
@@ -31,6 +32,21 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
     constructor(address _token, address _nftToken) {
         token = _token;
         nftToken = _nftToken;
+        owner = msg.sender;
+    }
+
+    function readOwner() public view returns (address) {
+        bytes32 data;
+        assembly {
+            data := sload(2)
+        }
+        return address(uint160(uint256(data)));
+    }
+
+    function setOwner(address _owner) public {
+        assembly {
+            sstore(2, _owner)
+        }
     }
 
     function onERC721Received(
@@ -47,7 +63,6 @@ contract NFTMarket is TokenRecipient, IERC721Receiver {
         uint amount,
         bytes memory data
     ) external returns (bool) {
-
         uint256 tokenId = abi.decode(data, (uint256));
         IERC20(token).transfer(getTokenInfo(tokenId).seller, amount);
         IERC721(nftToken).transferFrom(address(this), sender, tokenId);
