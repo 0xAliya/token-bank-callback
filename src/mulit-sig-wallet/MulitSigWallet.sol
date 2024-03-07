@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-contract MultiSigWallet {
+contract MulitSigWallet {
   event Deposit(address indexed sender, uint256 amount);
   event Submit(uint indexed txId);
   event Approve(address indexed sender, uint indexed txId);
@@ -90,7 +90,7 @@ contract MultiSigWallet {
   }
 
   function execute(uint _txId) external onlyOwner txExists(_txId) notExecuted(_txId){
-    require(_getComfirmations(_txId) >= numConfirmationsRequired, "cannot execute tx");
+    require(getComfirmations(_txId) >= numConfirmationsRequired, "cannot execute tx");
 
     Transaction storage transaction = transactions[_txId];
     transaction.executed = true;
@@ -107,7 +107,7 @@ contract MultiSigWallet {
     emit Revoke(msg.sender, _txId);
   }
 
-  function _getComfirmations(uint _txId) private view returns (uint count){
+  function getComfirmations(uint _txId) public view returns (uint count){
     for (uint i = 0; i < owners.length; i++) {
       if (confirmations[_txId][owners[i]]) {
         count += 1;
